@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, Typography, Paper, Grid, Box, Drawer, List, ListItem, ListItemIcon, ListItemText, CssBaseline, IconButton, Button, Divider} from '@mui/material';
 import { Inbox as InboxIcon, Menu as MenuIcon, ChevronLeft as ChevronLeftIcon } from '@mui/icons-material';
 import QueueMusicIcon from '@mui/icons-material/QueueMusic';
-import StickyNote2Icon from '@mui/icons-material/StickyNote2';
+import HandymanIcon from '@mui/icons-material/Handyman';
 
 const drawerWidth = 240;
 
@@ -102,13 +102,13 @@ function App() {
                 </ListItemIcon>
                 <ListItemText primary="Inbox" />
                 </ListItem>
-                <ListItem button onClick={() => handleNavigation('http://115.68.193.117:3000/components/main')} sx={{ mt: '5px' }}>
+                <ListItem button onClick={() => handleNavigation('http://116.125.140.82/:3000/components/main')} sx={{ mt: '5px' }}>
                 <ListItemIcon>
-                    <StickyNote2Icon />
+                    <HandymanIcon />
                 </ListItemIcon>
                 <ListItemText primary="Settings" />
                 </ListItem>
-                <ListItem button onClick={() => handleNavigation('http://115.68.193.117:3000/components/mp3set')} sx={{ mt: '5px' }}>
+                <ListItem button onClick={() => handleNavigation('http://116.125.140.82/:3000/components/mp3set')} sx={{ mt: '5px' }}>
                 <ListItemIcon>
                     <QueueMusicIcon />
                 </ListItemIcon>
