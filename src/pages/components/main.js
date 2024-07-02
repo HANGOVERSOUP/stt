@@ -129,7 +129,7 @@ function App() {
                     <Paper elevation={3} style={{ flex: 1, padding: '2rem', marginRight: '1.5rem', height: '100%' }}>
                         <Box sx={{mb :3}}>
                             <Typography variant="h4">
-                                파일 업로드ㅁ
+                                파일 업로드
                             </Typography>
                         </Box>
                         <Divider/>
