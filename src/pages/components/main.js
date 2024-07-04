@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Toolbar, Typography, Paper, Grid, Box, Drawer, List, ListItem, ListItemIcon, ListItemText, CssBaseline, IconButton, Button, Divider} from '@mui/material';
+import { AppBar, Toolbar, Typography, Paper, Grid, Box, Drawer, List, ListItem, ListItemIcon, ListItemText, CssBaseline, IconButton, Button, Divider } from '@mui/material';
 import { Inbox as InboxIcon, Menu as MenuIcon, ChevronLeft as ChevronLeftIcon } from '@mui/icons-material';
 import QueueMusicIcon from '@mui/icons-material/QueueMusic';
 import HandymanIcon from '@mui/icons-material/Handyman';
@@ -154,18 +154,27 @@ function App() {
                             <Typography variant="h5">
                                 새로운 파일 업로드
                             </Typography>
-                            <input type="file" onChange={handleFileChange} />
+                            
+                            <Button variant="contained" component="label"color="primary">
+                                파일 선택
+                                <input type="file" hidden onChange={handleFileChange} />
+                            </Button>
+                            {selectedFile && (
+                                <Typography variant="body1" sx={{ mt: 1 }}>
+                                    선택된 파일: {selectedFile.name}
+                                </Typography>
+                            )}
                             <br/>
-                            <Button variant="contained" color="primary" onClick={handleApply} sx={{ mt: 2,mb:2 }}>
+                            <Button variant="contained" color="primary" onClick={handleApply} sx={{ mt: 2, mb: 2 }}>
                                 적용
                             </Button>
                         </Box>
                         <Divider/>
                         <Box sx={{mt :3}}> 
                             <Typography variant="h5">
-                                음성파일업로드 페이지 이동
+                                음성 파일 업로드 페이지 이동
                             </Typography>
-                            <Button variant="contained" color="primary" onClick={() => handleNavigation('http://115.68.193.117:3000/components/mp3set')} sx={{ mt: 2 }}>
+                            <Button variant="contained" color="primary" onClick={() => handleNavigation('http://116.125.140.82/:3000/components/mp3set')} sx={{ mt: 2 }}>
                                 이동
                             </Button>
                         </Box>
