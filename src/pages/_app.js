@@ -7,7 +7,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import theme from '../styles/theme';
 import createEmotionCache from '../styles/createEmotionCache';
 import { CacheProvider } from '@emotion/react';
-// import '../styles/globals.css';
+import '../styles/globals.css';
 
 const clientSideEmotionCache = createEmotionCache();
 
@@ -24,7 +24,7 @@ function MyApp(props) {
   return (
     <CacheProvider value={emotionCache}>
       <Head>
-        <title>My page</title>
+        <title>STT page</title>
         <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
       </Head>
       <ThemeProvider theme={theme}>

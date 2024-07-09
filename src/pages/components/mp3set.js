@@ -1,97 +1,69 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Paper, Grid, Box, Drawer, List, ListItem, ListItemIcon, ListItemText, CssBaseline, IconButton } from '@mui/material';
-import { Inbox as InboxIcon, Mail as MailIcon, Menu as MenuIcon, ChevronLeft as ChevronLeftIcon } from '@mui/icons-material';
-import QueueMusicIcon from '@mui/icons-material/QueueMusic';
-import StickyNote2Icon from '@mui/icons-material/StickyNote2';
+import {Toolbar, Typography, Paper, Grid, Box, Button } from '@mui/material';
 
-const drawerWidth = 240;
 
 function App() {
-  const [open, setOpen] = useState(false);
+  const [selectedmp3, setselectedmp3] = useState(null);
 
-  const toggleDrawer = () => {
-    setOpen(!open);
+  const handlemp3Change = (event) => {
+    setselectedmp3(event.target.files[0]);
   };
 
-  const handleNavigation = (url) => {
-    window.location.href = url;
+  const handleUpload = async () => {
+    if (!selectedmp3) {
+      alert('파일을 선택해주세요.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', selectedmp3);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.indexOf('application/json') !== -1) {
+        const data = await response.json();
+        if (response.ok) {
+          alert('파일 업로드 성공');
+        } else {
+          alert(`파일 업로드 실패: ${data.error}`);
+        }
+      } else {
+        const text = await response.text();
+        console.error('Unexpected response:', text);
+        alert('파일 업로드 실패: 서버에서 JSON 응답을 받지 못했습니다.');
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('파일 업로드 중 오류 발생');
+    }
   };
+
 
   return (
-    <div style={{ display: 'flex' }}>
-      <CssBaseline />
 
-      <AppBar position="fixed" style={{ zIndex: 1201 }}>
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="toggle drawer"
-            onClick={toggleDrawer}
-            edge="start"
-          >
-            {open ? <ChevronLeftIcon /> : <MenuIcon />}
-          </IconButton>
-          <Typography variant="h6" noWrap>
-            Dashboard
-          </Typography>
-        </Toolbar>
-      </AppBar>
-
-      <Drawer
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: drawerWidth,
-            boxSizing: 'border-box',
-          },
-        }}
-        variant="temporary"
-        anchor="left"
-        open={open}
-        onClose={toggleDrawer}
-      >
-        <Box sx={{ overflow: 'auto' }}>
-          <List>
-            {/* <ListItem button onClick={() => handleNavigation('')} sx={{ mt: '5px' }}> */}
-            <ListItem  sx={{ mt: '5px' }}>
-              <ListItemIcon>
-                <InboxIcon />
-              </ListItemIcon>
-              <ListItemText primary="Inbox" />
-            </ListItem>
-            <ListItem button onClick={() => handleNavigation('http://115.68.193.117:3000/components/main')} sx={{ mt: '5px' }}>
-              <ListItemIcon>
-                <StickyNote2Icon />
-              </ListItemIcon>
-              <ListItemText primary="Settings" />
-            </ListItem>
-            <ListItem button onClick={() => handleNavigation('http://115.68.193.117:3000/components/mp3set')} sx={{ mt: '5px' }}>
-              <ListItemIcon>
-                <QueueMusicIcon />
-              </ListItemIcon>
-              <ListItemText primary="MP3" />
-            </ListItem>
-
-          </List>
-        </Box>
-      </Drawer>
-
-      <Box
-        component="main"
-        sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3, marginLeft: 0 }}
-      >
-        <Toolbar />
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Paper elevation={3} style={{ padding: '2rem' }}>
-              <Typography variant="h4">MP3?</Typography>
-              <Typography variant="body1"></Typography>
-            </Paper>
-          </Grid>
+    <Box
+      component="main"
+      sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3, marginLeft: 0 }}
+    >
+      <Toolbar />
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Paper elevation={3} style={{ padding: '2rem' }}>
+            <Typography variant="h4">ZIP 파일 업로드</Typography>
+            <input type="file" onChange={handlemp3Change} accept=".zip" />
+            <Button variant="contained" color="primary" onClick={handleUpload} sx={{ mt: 2 }}>
+              업로드
+            </Button>
+          </Paper>
         </Grid>
-      </Box>
-    </div>
+      </Grid>
+    </Box>
+
   );
 }
 
