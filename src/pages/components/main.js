@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Paper, Grid, Box, CssBaseline, Button, Divider } from '@mui/material';
-
+import { TextField, AppBar, Toolbar, Typography, Paper, Grid, Box, CssBaseline, Button, Divider } from '@mui/material';
 
 import DataGridComponent from '../components/data';
 
-
 function App() {
-  const [files, setFiles] = useState([]);
+  const [projectName, setProjectName] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedMp3, setSelectedMp3] = useState(null);
   const [selectedCati, setSelectedCati] = useState(null);
@@ -29,34 +27,38 @@ function App() {
       return;
     }
 
+    if (!projectName) {
+      alert('프로젝트명을 입력해주세요.');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
+    const url = `http://116.125.140.82:9000/upload_file?project_name=${encodeURIComponent(projectName)}`;
+
     try {
-      const response = await fetch('/api/upload', {
+      const response = await fetch(url, {
         method: 'POST',
         body: formData,
       });
 
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.indexOf('application/json') !== -1) {
+      if (response.ok) {
         const data = await response.json();
-        if (response.ok) {
-          alert('파일 업로드 성공');
-        } else {
-          alert(`파일 업로드 실패: ${data.error}`);
-        }
+        console.log('File uploaded successfully:', data);
+        alert('파일 업로드 성공');
       } else {
-        const text = await response.text();
-        console.error('Unexpected response:', text);
-        alert('파일 업로드 실패: 서버에서 JSON 응답을 받지 못했습니다.');
+        const errorText = await response.text();
+        console.error('Error uploading file:', errorText);
+        alert('파일 업로드 실패: ' + errorText);
       }
+
     } catch (error) {
+        
       console.error('Error uploading file:', error);
       alert('파일 업로드 중 오류 발생');
     }
   };
-
 
   return (
     <div style={{ display: 'flex' }}>
@@ -64,7 +66,7 @@ function App() {
 
       <AppBar position="fixed" style={{ zIndex: 1201 }}>
         <Toolbar>
-            <Typography variant="h6" noWrap>STT prototype</Typography>
+          <Typography variant="h6" noWrap>STT prototype</Typography>
         </Toolbar>
       </AppBar>
 
@@ -74,77 +76,83 @@ function App() {
           <Grid item xs={12}>
             <Box display="flex" flexDirection="row" height="88.5vh" gap={3} p={3}>
               <Paper elevation={3} style={{ flex: 0.5, padding: '1.5rem', marginRight: '0rem', height: '100%' }}>
-                <Box sx={{ mt: 1 }}>
-                  <Typography variant="h5">적용된 파일</Typography>
-                  <ul>
-                    {files.length > 0 ? (
-                      files.map((file, index) => (
-                        <li key={index}>{file}</li>
-                      ))
-                    ) : (
-                      <Typography variant="body1">파일이 없습니다.</Typography>
-                    )}
-                  </ul>
+                <Box sx={{ mt: 1, mb: 1 }}>
+                  <Typography variant="h5">프로젝트명 입력</Typography>
+                  <TextField
+                    id="outlined-basic"
+                    label="프로젝트 명"
+                    variant="outlined"
+                    size="small"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    sx={{ mt: 1 }}
+                  />
                 </Box>
                 <Divider />
-                <Box sx={{ mt: 3 }}>
-                    <Typography variant="h5">설문 파일 업로드</Typography>
-
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="h5">설문 파일 업로드</Typography>
+                  <div style={{ display: "flex", flexDirection: 'column' }}>
                     <Button variant="contained" component="label" color="primary">
-                        TXT 파일 선택
-                    <input type="file" hidden onChange={handleSurveyChange} accept=".txt"/>
+                      TXT 파일 선택
+                      <input type="file" hidden onChange={handleSurveyChange} accept=".txt" />
                     </Button>
                     {selectedFile && (
-                    <Typography variant="body1" sx={{ mt: 1 }}>
+                      <Typography variant="body1" sx={{ mt: 1 }}>
                         선택된 파일: {selectedFile.name}
-                    </Typography>
+                      </Typography>
                     )}
-                    <br />
-                    <Button variant="contained" color="primary" onClick={() => handleUpload(selectedFile, 'survey')} sx={{ mt: 2, mb: 2 }}>
-                        업로드
+                    <Button variant="contained" color="primary" onClick={() => handleUpload(selectedFile, 'survey')} sx={{ mt: 1, mb: 1 }}>
+                      업로드
                     </Button>
+                  </div>
                 </Box>
                 <Divider />
-                <Box sx={{ mt: 3 }}>
-                    <Typography variant="h5">CATI 데이터 업로드</Typography>
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="h5">CATI 데이터 업로드</Typography>
+                  <div style={{ display: "flex", flexDirection: 'column' }}>
                     <Button variant="contained" component="label" color="primary">
-                        EXCEL 파일 선택
-                        <input type="file" hidden onChange={handleCatiChange} accept=".xlsx, .xls" />
+                      EXCEL 파일 선택
+                      <input type="file" hidden onChange={handleCatiChange} accept=".xlsx, .xls" />
                     </Button>
                     {selectedCati && (
-                    <Typography variant="body1" sx={{ mt: 1 }}>
+                      <Typography variant="body1" sx={{ mt: 1 }}>
                         선택된 파일: {selectedCati.name}
-                    </Typography>
+                      </Typography>
                     )}
-                    <br />
-                    <Button variant="contained" color="primary" onClick={() => handleUpload(selectedCati, 'cati')} sx={{ mt: 2 , mb: 2 }}>
-                        업로드
+                    <Button variant="contained" color="primary" onClick={() => handleUpload(selectedCati, 'cati')} sx={{ mt: 1, mb: 1 }}>
+                      업로드
                     </Button>
+                  </div>
                 </Box>
-
                 <Divider />
-                <Box sx={{ mt: 3 }}>
-                    <Typography variant="h5">음성 파일 업로드</Typography>
-
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="h5">음성 파일 업로드</Typography>
+                  <div style={{ display: "flex", flexDirection: 'column' }}>
                     <Button variant="contained" component="label" color="primary">
-                        ZIP 파일 선택
-                        <input type="file" hidden onChange={handleMp3Change} accept=".zip" />
+                      ZIP 파일 선택
+                      <input type="file" hidden onChange={handleMp3Change} accept=".zip" />
                     </Button>
                     {selectedMp3 && (
-                    <Typography variant="body1" sx={{ mt: 1 }}>
-                      선택된 파일: {selectedMp3.name}
-                    </Typography>
+                      <Typography variant="body1" sx={{ mt: 1 }}>
+                        선택된 파일: {selectedMp3.name}
+                      </Typography>
                     )}
-                    <br />
-                    <Button variant="contained" color="primary" onClick={() => handleUpload(selectedMp3, 'mp3')} sx={{ mt: 2 , mb: 2 }}>
-                        업로드
+                    <Button variant="contained" color="primary" onClick={() => handleUpload(selectedMp3, 'mp3')} sx={{ mt: 1, mb: 1 }}>
+                      업로드
                     </Button>
+                  </div>
                 </Box>
                 <Divider />
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="h5">뭐 실행</Typography>
+                  <Button variant="contained" color="primary" sx={{ mt: 1, mb: 1 }}>
+                    실행
+                  </Button>
+                </Box>
               </Paper>
 
               <Paper elevation={3} style={{ flex: 3, padding: '1.5rem', height: '100%' }}>
-                <DataGridComponent /> 
+                <DataGridComponent />
               </Paper>
 
             </Box>

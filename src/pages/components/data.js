@@ -62,13 +62,33 @@ const DataGridComponent = () => {
     return newRow;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const updatedRows = rows.map((row) => {
       const editedRow = editedRows[row.id];
       return editedRow ? { ...row, ...editedRow } : row;
     });
     console.log('Saving data:', updatedRows);
-
+  
+    const jsonData = JSON.stringify(updatedRows);
+    const url = new URL('http://116.125.140.82:9000/dummy');
+    const params = new URLSearchParams({ data: jsonData });
+  
+    try {
+      const response = await fetch(`${url}?${params}`, {
+        method: 'POST',
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
+      const data = await response.json();
+      console.log('Response data:', data);
+  
+    } catch (error) {
+      console.error('Error sending data:', error);
+    }
+  
     setRows(updatedRows);
     setEditedRows({});
   };
@@ -76,6 +96,7 @@ const DataGridComponent = () => {
   return (
     <>
       <Typography variant="h4">데이터</Typography>
+      {/* <Typography variant="h4">a</Typography> */}
       <div style={{ height: 600, width: '100%' }}>
         <DataGrid
           rows={rows}
@@ -88,13 +109,13 @@ const DataGridComponent = () => {
           sx={{
             '& .MuiDataGrid-cell': {
               whiteSpace: 'nowrap',
-              overflow: "hidden",
+              overflowX: "auto",
               textOverflow: "ellipsis"
             }
           }}
         />
       </div>
-      <Button color="primary" variant="contained" onClick={handleSave} sx={{ mt: '20px', ml: '92%' }}>
+      <Button color="primary" variant="contained" onClick={handleSave} sx={{ mt: '15px', ml: '92%' }}>
         저장하기
       </Button>
     </>
