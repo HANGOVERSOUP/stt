@@ -1,27 +1,34 @@
 import React, { useState } from 'react';
-import { TextField, AppBar, Toolbar, Typography, Paper, Grid, Box, CssBaseline, Button, Divider } from '@mui/material';
+import { TextField, AppBar, Toolbar, Typography, Paper, Grid, Box, CssBaseline, Button, Divider, Backdrop, CircularProgress } from '@mui/material';
+import DataGridComponent from './data';
 
-import DataGridComponent from '../components/data';
+const App: React.FC = () => {
+  const [projectName, setProjectName] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedMp3, setSelectedMp3] = useState<File | null>(null);
+  const [selectedCati, setSelectedCati] = useState<File | null>(null);
+  const [surveyData, setSurveyData] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-function App() {
-  const [projectName, setProjectName] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [selectedMp3, setSelectedMp3] = useState(null);
-  const [selectedCati, setSelectedCati] = useState(null);
-
-  const handleMp3Change = (event) => {
-    setSelectedMp3(event.target.files[0]);
+  const handleMp3Change = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setSelectedMp3(event.target.files[0]);
+    }
   };
 
-  const handleCatiChange = (event) => {
-    setSelectedCati(event.target.files[0]);
+  const handleCatiChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setSelectedCati(event.target.files[0]);
+    }
   };
 
-  const handleSurveyChange = (event) => {
-    setSelectedFile(event.target.files[0]);
+  const handleSurveyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setSelectedFile(event.target.files[0]);
+    }
   };
 
-  const handleUpload = async (file, type) => {
+  const handleUpload = async (file: File | null, type: string) => {
     if (!file) {
       alert('파일을 선택해주세요.');
       return;
@@ -47,6 +54,9 @@ function App() {
         const data = await response.json();
         console.log('File uploaded successfully:', data);
         alert('파일 업로드 성공');
+        if (type === 'survey') {
+          await handleParseSurvey();
+        }
       } else {
         const errorText = await response.text();
         console.error('Error uploading file:', errorText);
@@ -54,10 +64,71 @@ function App() {
       }
 
     } catch (error) {
-        
       console.error('Error uploading file:', error);
       alert('파일 업로드 중 오류 발생');
     }
+  };
+
+  const handleParseSurvey = async () => {
+    if (!projectName) {
+      alert('프로젝트명을 입력해주세요.');
+      return;
+    }
+
+    setLoading(true);
+
+    const url = `http://116.125.140.82:9000/parse_survey?project_name=${encodeURIComponent(projectName)}`;
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Survey data received:', data);
+        setSurveyData(data);
+      } else {
+        const errorText = await response.text();
+        console.error('Error parsing survey:', errorText);
+        alert('설문 데이터 파싱 실패: ' + errorText);
+      }
+    } catch (error) {
+      console.error('Error parsing survey:', error);
+      alert('설문 데이터 파싱 중 오류 발생');
+    }
+
+    setLoading(false);
+  };
+
+  const handleExecute = async () => {
+    if (!projectName) {
+      alert('프로젝트명을 입력해주세요.');
+      return;
+    }
+
+    setLoading(true);
+
+    const url = `http://116.125.140.82:9000/execute?project_name=${encodeURIComponent(projectName)}`;
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Execute response:', data);
+        alert('실행 완료');
+      } else {
+        const errorText = await response.text();
+        console.error('Error executing:', errorText);
+        alert('실행 실패: ' + errorText);
+      }
+    } catch (error) {
+      console.error('Error executing:', error);
+      alert('실행 중 오류 발생');
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -70,13 +141,13 @@ function App() {
         </Toolbar>
       </AppBar>
 
-      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3, marginLeft: 0 }}>
+      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 1, marginLeft: 0, mt: 0 }}>
         <Toolbar />
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Box display="flex" flexDirection="row" height="88.5vh" gap={3} p={3}>
-              <Paper elevation={3} style={{ flex: 0.5, padding: '1.5rem', marginRight: '0rem', height: '100%' }}>
-                <Box sx={{ mt: 1, mb: 1 }}>
+            <Box display="flex" flexDirection="row" height="91.5vh" gap={3} p={3}>
+              <Paper elevation={3} style={{ flex: 1, padding: '1.5rem', marginRight: '0rem', height: '100%' }}>
+                <Box sx={{ mt: 0, mb: 1 }}>
                   <Typography variant="h5">프로젝트명 입력</Typography>
                   <TextField
                     id="outlined-basic"
@@ -89,7 +160,7 @@ function App() {
                   />
                 </Box>
                 <Divider />
-                <Box sx={{ mt: 2 }}>
+                <Box sx={{ mt: 1 }}>
                   <Typography variant="h5">설문 파일 업로드</Typography>
                   <div style={{ display: "flex", flexDirection: 'column' }}>
                     <Button variant="contained" component="label" color="primary">
@@ -107,7 +178,7 @@ function App() {
                   </div>
                 </Box>
                 <Divider />
-                <Box sx={{ mt: 2 }}>
+                <Box sx={{ mt: 1 }}>
                   <Typography variant="h5">CATI 데이터 업로드</Typography>
                   <div style={{ display: "flex", flexDirection: 'column' }}>
                     <Button variant="contained" component="label" color="primary">
@@ -125,7 +196,7 @@ function App() {
                   </div>
                 </Box>
                 <Divider />
-                <Box sx={{ mt: 2 }}>
+                <Box sx={{ mt: 1 }}>
                   <Typography variant="h5">음성 파일 업로드</Typography>
                   <div style={{ display: "flex", flexDirection: 'column' }}>
                     <Button variant="contained" component="label" color="primary">
@@ -143,22 +214,28 @@ function App() {
                   </div>
                 </Box>
                 <Divider />
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="h5">뭐 실행</Typography>
-                  <Button variant="contained" color="primary" sx={{ mt: 1, mb: 1 }}>
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="h5">STT 실행/다운로드</Typography>
+                  <Button variant="contained" color="primary" sx={{ mt: 1, mb: 1 }} onClick={handleExecute}>
                     실행
+                  </Button>
+                  <Button variant="contained" color="primary" sx={{ mt: 1, mb: 1, ml: 1 }}>
+                    다운로드
                   </Button>
                 </Box>
               </Paper>
 
-              <Paper elevation={3} style={{ flex: 3, padding: '1.5rem', height: '100%' }}>
-                <DataGridComponent />
+              <Paper elevation={3} style={{ flex: 1, padding: '1.5rem', height: '100%' }}>
+                <DataGridComponent surveyData={surveyData} projectName={projectName} />
               </Paper>
-
             </Box>
           </Grid>
         </Grid>
       </Box>
+
+      <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={loading}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </div>
   );
 }

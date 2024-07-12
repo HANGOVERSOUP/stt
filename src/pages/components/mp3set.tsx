@@ -1,22 +1,23 @@
-import React, { useState } from 'react';
-import {Toolbar, Typography, Paper, Grid, Box, Button } from '@mui/material';
+import React, { useState, ChangeEvent } from 'react';
+import { Toolbar, Typography, Paper, Grid, Box, Button } from '@mui/material';
 
+const App: React.FC = () => {
+  const [selectedMp3, setSelectedMp3] = useState<File | null>(null);
 
-function App() {
-  const [selectedmp3, setselectedmp3] = useState(null);
-
-  const handlemp3Change = (event) => {
-    setselectedmp3(event.target.files[0]);
+  const handleMp3Change = (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setSelectedMp3(event.target.files[0]);
+    }
   };
 
   const handleUpload = async () => {
-    if (!selectedmp3) {
+    if (!selectedMp3) {
       alert('파일을 선택해주세요.');
       return;
     }
 
     const formData = new FormData();
-    formData.append('file', selectedmp3);
+    formData.append('file', selectedMp3);
 
     try {
       const response = await fetch('/api/upload', {
@@ -43,19 +44,14 @@ function App() {
     }
   };
 
-
   return (
-
-    <Box
-      component="main"
-      sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3, marginLeft: 0 }}
-    >
+    <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3, marginLeft: 0 }}>
       <Toolbar />
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <Paper elevation={3} style={{ padding: '2rem' }}>
             <Typography variant="h4">ZIP 파일 업로드</Typography>
-            <input type="file" onChange={handlemp3Change} accept=".zip" />
+            <input type="file" onChange={handleMp3Change} accept=".zip" />
             <Button variant="contained" color="primary" onClick={handleUpload} sx={{ mt: 2 }}>
               업로드
             </Button>
@@ -63,8 +59,7 @@ function App() {
         </Grid>
       </Grid>
     </Box>
-
   );
-}
+};
 
 export default App;
