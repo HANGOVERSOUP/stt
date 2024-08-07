@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Paper, Typography, Button, Box, Backdrop, CircularProgress } from '@mui/material';
+import { Paper, Typography, Button, Box } from '@mui/material';
 import { DataGrid, GridActionsCellItem, GridToolbarContainer } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import { randomId } from '@mui/x-data-grid-generator';
@@ -12,7 +12,7 @@ const transformData = (data) => {
     question_number: item.question_number,
     question_context: item.question_context,
     option: item.option,
-    option_number: Array.isArray(item.option_number) ? item.option_number.join(', ') : item.option_number, // Ensure it's a string
+    option_label: Array.isArray(item.option_number) ? item.option_number.join(', ') : '', 
   }));
 };
 
@@ -36,11 +36,9 @@ const EditToolbar = (props) => {
   );
 };
 
-const DataGridComponent = ({ surveyData, projectName }) => {
+const DataGridComponent = ({ surveyData, projectName, percent, xlrange1, xlrange2 }) => {
   const [rows, setRows] = useState([]);
   const [editedRows, setEditedRows] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [sttLoading, setSttLoading] = useState(false);
 
   useEffect(() => {
     if (surveyData) {
@@ -63,67 +61,81 @@ const DataGridComponent = ({ surveyData, projectName }) => {
   };
 
   const handleSave = async () => {
-    if (!surveyData) {
-      console.error('No survey data to send');
-      return;
-    }
-
     const updatedRows = rows.map((row) => {
       const editedRow = editedRows[row.id];
       return editedRow ? { ...row, ...editedRow } : row;
     });
-
-    const url = `http://116.125.140.82:9000/parsed_survey_old?project_name=${encodeURIComponent(projectName)}`;
-
-    const requestData = {
-      data: surveyData,
-    };
-
-    setLoading(true);
-
+  
+    console.log('Saving data:', updatedRows);
+  
+    const url = `http://116.125.140.82:9000/parsed_survey_old`;
+  
+    const params = new URLSearchParams({
+      project_name: projectName,
+      data: JSON.stringify(updatedRows),
+    });
+  
     try {
-      const response = await fetch(url, {
+      const response = await fetch(`${url}?${params.toString()}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
       });
-
+  
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
-
-      const data = await response.json();
-      console.log('Response data:', data);
-
-      // Call run_stt after successful save
-      setSttLoading(true);
-      await fetch(`http://116.125.140.82:9000/run_stt?project_name=${encodeURIComponent(projectName)}`, {
-        method: 'POST',
-      });
-      setSttLoading(false);
-
+  
+      const result = await response.json();
+      console.log('Response data:', result);
+  
+      await handleRunSTT();
     } catch (error) {
       console.error('Error sending data:', error);
-      setSttLoading(false);
     }
-
-    setLoading(false);
+  
     setRows(updatedRows);
     setEditedRows({});
+  };
+  
+
+  const handleRunSTT = async () => {
+    const url = `http://116.125.140.82:9000/run_stt`;
+
+    const params = new URLSearchParams({
+      project_name: projectName,
+      percent_info: percent,
+      start: xlrange1,
+      end: xlrange2,
+    });
+
+    try {
+      const response = await fetch(`${url}?${params.toString()}`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('STT execution failed');
+      }
+
+      const data = await response.json();
+      console.log('STT execution result:', data);
+
+      alert('STT process completed successfully.');
+    } catch (error) {
+      console.error('Error running STT:', error);
+      alert('STT 실행 중 오류 발생');
+    }
   };
 
   const columns = [
     { field: 'question_label', headerName: 'CATI_컬럼값', width: 140, editable: true },
     { field: 'question_number', headerName: '설문지_문항번호', width: 150, editable: true },
     { field: 'question_context', headerName: '설문_문항내용', width: 330, editable: true },
-    { field: 'option_number', headerName: '설문_보기번호', width: 140, editable: true },
+    { field: 'option_label', headerName: '설문_보기번호', width: 140, editable: true },
     {
       field: 'option',
       headerName: '설문_보기',
       width: 500,
-      renderCell: (params) => Array.isArray(params.value) ? params.value.join(', ') : params.value,
+      renderCell: (params) => Array.isArray(params.value) ? params.value.join(', ') : '',
       editable: true,
     },
     {
@@ -133,11 +145,10 @@ const DataGridComponent = ({ surveyData, projectName }) => {
       type: 'actions',
       getActions: (params) => [
         <GridActionsCellItem
-          key={params.id + '-delete'}  // Add a unique key for each element
           icon={<Button variant="contained" color="secondary">삭제</Button>}
           label="Delete"
           onClick={() => handleDelete(params.id)}
-        />
+        />,
       ],
     },
   ];
@@ -173,12 +184,9 @@ const DataGridComponent = ({ surveyData, projectName }) => {
           }}
         />
       </Box>
-      <Button color="primary" variant="contained" onClick={handleSave} sx={{ mt: '20px', ml: '89%' }}>
+      <Button color="primary" variant="contained" onClick={handleSave} sx={{ mt: '20px', ml: '87%' }}>
         수정사항 저장하기
       </Button>
-      <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={loading || sttLoading}>
-        <CircularProgress color="inherit" />
-      </Backdrop>
     </>
   );
 };
