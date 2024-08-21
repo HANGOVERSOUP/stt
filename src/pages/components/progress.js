@@ -11,7 +11,7 @@ const StatusCheckComponent = () => {
       return;
     }
 
-    const url = `http://116.125.140.82:9000/progress_check?project_name=${encodeURIComponent(projectName)}`;
+    const url = `http://116.125.140.82:9900/progress_check?project_name=${encodeURIComponent(projectName)}`;
 
     try {
       const response = await fetch(url);

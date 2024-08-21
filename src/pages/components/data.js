@@ -99,32 +99,44 @@ const DataGridComponent = ({ surveyData, projectName, percent, xlrange1, xlrange
 
   const handleRunSTT = async () => {
     const url = `http://116.125.140.82:9000/run_stt`;
-
+  
     const params = new URLSearchParams({
       project_name: projectName,
       percent_info: percent,
       start: xlrange1,
       end: xlrange2,
     });
-
+  
     try {
       const response = await fetch(`${url}?${params.toString()}`, {
         method: 'POST',
       });
-
+  
       if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.detail && errorData.detail.includes("No mp3 files found to run")) {
+          alert('실행할 mp3 파일이 없습니다.');
+        } else {
+          alert('STT 실행 중 오류 발생');
+        }
         throw new Error('STT execution failed');
       }
-
+  
       const data = await response.json();
       console.log('STT execution result:', data);
-
-      alert('STT process completed successfully.');
+  
+      if (data.message === "STT process done") {
+        alert('STT 작업이 성공적으로 완료되었습니다.');
+      } else {
+        alert('알 수 없는 메시지: ' + data.message);
+      }
+  
     } catch (error) {
       console.error('Error running STT:', error);
-      alert('STT 실행 중 오류 발생');
+      // alert('STT 실행 중 오류 발생');
     }
   };
+  
 
   const columns = [
     { field: 'question_label', headerName: 'CATI_컬럼값', width: 140, editable: true },
@@ -145,6 +157,7 @@ const DataGridComponent = ({ surveyData, projectName, percent, xlrange1, xlrange
       type: 'actions',
       getActions: (params) => [
         <GridActionsCellItem
+          key={`${params.id}-delete`} // key 속성 추가
           icon={<Button variant="contained" color="secondary">삭제</Button>}
           label="Delete"
           onClick={() => handleDelete(params.id)}
@@ -152,6 +165,7 @@ const DataGridComponent = ({ surveyData, projectName, percent, xlrange1, xlrange
       ],
     },
   ];
+  
 
   return (
     <>

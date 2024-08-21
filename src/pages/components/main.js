@@ -147,7 +147,7 @@ function App() {
 
 
   return (
-    <div style={{ display: 'flex' }}>
+    <div style={{ display: 'flex'}}>
       <CssBaseline />
       <AppBar position="fixed" style={{ zIndex: 1201 }}>
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -178,7 +178,8 @@ function App() {
                   padding: '1.5rem',
                   minWidth: '200px',
                   marginRight: '0rem',
-                  height: '100%',
+                  display:'table',
+                  minHeight: '800px'
                 }}
               >
                 <Box sx={{ mt: 0, mb: 1 }}>
