@@ -193,7 +193,7 @@ function App() {
                     size="small"
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
-                    sx={{ mt: 1 }}
+                    sx={{ mt: 1 ,width:'100%' }}
                   />
                 </Box>
   
@@ -205,7 +205,7 @@ function App() {
                     size="small"
                     value={percent}
                     onChange={(e) => setPercent(e.target.value)}
-                    sx={{ mt: 1 }}
+                    sx={{ mt: 1 ,width:'100%' }}
                   />
                 </Box>
   
